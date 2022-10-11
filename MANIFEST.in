@@ -9,5 +9,7 @@ include files/securedrop-scalable.svg
 include files/sdw-login
 include files/sdw-notify
 include files/sdw-updater
+include files/migrations.py
 include files/press.freedom.SecureDropUpdater.desktop
+include migrations/*
 include setup.py

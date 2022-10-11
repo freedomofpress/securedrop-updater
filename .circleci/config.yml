@@ -3,59 +3,65 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: debian:bullseye
+      - image: fedora:32
     steps:
-      - run: apt-get update && apt-get install -y sudo git make
+      - run: dnf install -y git make
       - checkout
       - run:
           name: Install dependencies and run linters
           command: |
             make install-deps
-            python3 -m venv .venv
+            make venv
             source .venv/bin/activate
             pip install --require-hashes -r requirements/dev-requirements.txt
-            sudo apt-get install -y file
-            make black
-  buildrpm:
+            make lint
+  build-rpm:
     docker:
-      - image: debian:bullseye
+      - image: fedora:32
     steps:
-      - run: apt-get update && apt-get install -y sudo git make
-      - checkout
-      - run: make install-deps
-      - run: make dom0-rpm
-  reprotest:
-    docker:
-      - image: debian:bullseye
-    steps:
-      - run: apt-get update && apt-get install -y sudo git make
-      - checkout
-      - run: make install-deps
-      # Patch reprotest in-place to skip 'setarch' prefix, which fails under containers.
-      # See for more info in https://github.com/freedomofpress/securedrop-debian-packaging/pull/213/commits/18770bd44ec54da86f436515da4452c05111605e
-      # We should probably try to upstream this as an option.
-      - run:
-          command:
-            sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
-      - run: make reprotest-ci
-  check:
-    docker:
-      - image: debian:bullseye
-    steps:
-      - run: apt-get update && apt-get install -y sudo git make
+      - run: dnf install -y git make
       - checkout
       - run:
-          name: Install Python requirements and run tests for launcher
+          name: Build RPMs twice, ensure reproducibility
           command: |
             make install-deps
-            make venv && source .venv/bin/activate
-            make check
+            PREFIX="/tmp/build_pass_"
+            make build-rpm | tee "${PREFIX}1"
+            make build-rpm | tee "${PREFIX}2"
+            [ "$(tail -n 1 ${PREFIX}1)" == "$(tail -n 1 ${PREFIX}2)" ]
+  test:
+    docker:
+      - image: fedora:32
+    steps:
+      - run: dnf install -y git make
+      - checkout
+      - run:
+          name: Install dependencies and run tests
+          command: |
+            make install-deps
+            make venv
+            source .venv/bin/activate
+            pip install --require-hashes -r requirements/dev-requirements.txt
+            make test
+  test-migration:
+    docker:
+      - image: fedora:32
+    steps:
+      - run: dnf install -y git make
+      - checkout
+      - run:
+          name: Install dependencies and run migration tests
+          command: |
+            make install-deps
+            curl https://raw.githubusercontent.com/QubesOS/qubes-qubes-release/master/qubes-dom0.repo.in | sed -e 's/$releasever/4.1/g' -e 's/%DIST%/fc32/g' > /etc/yum.repos.d/qubes-dom0.repo
+            curl -o /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.1-primary https://raw.githubusercontent.com/QubesOS/qubes-qubes-release/master/RPM-GPG-KEY-qubes-4-primary
+            make test-migration
 
 workflows:
   version: 2
   securedrop_updater_ci:
     jobs:
       - lint
-      - buildrpm
-      - reprotest
-      - check
+      - build-rpm
+      - test
+      - test-migration

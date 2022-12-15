@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 """
-Runs migration scripts in
+Runs migration scripts for this project
+
+Intended to be triggered by the %post rpm scriptlet rather than manually.
 """
 
 import sys

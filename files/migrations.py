@@ -5,10 +5,10 @@ Runs migration scripts for this project
 Intended to be triggered by the %post rpm scriptlet rather than manually.
 """
 
-import sys
-from glob import glob
 import os
 import subprocess
+import sys
+from glob import glob
 
 VERSION_FILE = "/var/lib/{}/version"
 MIGRATIONS_DIR = "/usr/libexec/{}/migrations/"

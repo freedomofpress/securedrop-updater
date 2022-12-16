@@ -36,7 +36,7 @@ venv: ## Provision a Python 3 virtualenv for development (ensure to also install
 check: lint test ## Runs linters and tests
 
 .PHONY: lint
-lint: black bandit rpmlint shellcheck ## Runs linters (black, bandit rpmlint, and shellcheck)
+lint: check-black check-isort flake8 bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, bandit rpmlint, and shellcheck)
 
 .PHONY: bandit
 bandit: ## Runs the bandit security linter
@@ -46,9 +46,25 @@ bandit: ## Runs the bandit security linter
 test: ## Runs tests with the X Virtual framebuffer
 	xvfb-run $(PYTHON3) -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util -v tests/
 
-.PHONY: black
-black: ## Runs the black code formatter checks
+.PHONY: check-black
+check-black: ## Check Python source code formatting with black
 	black --check --exclude .venv --line-length=100 .
+
+.PHONY: black
+black: ## Update Python source code formatting with black
+	black --exclude .venv --line-length=100 .
+
+.PHONY: check-isort
+check-isort: ## Check Python import organization with isort
+	isort --check-only --diff .
+
+.PHONY: isort
+isort: ## Update Python import organization with isort
+	isort --diff .
+
+.PHONY: flake8
+flake8: ## Validate PEP8 compliance for Python source files
+	flake8
 
 .PHONY: rpmlint
 rpmlint: ## Runs rpmlint on the spec file

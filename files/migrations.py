@@ -61,6 +61,9 @@ class Version:
             return True
         return self < other
 
+    def __str__(self):
+        return ".".join([f"{v}" for v in self.version])
+
 
 class Migration(Version):
     """
@@ -73,21 +76,24 @@ class Migration(Version):
         super().__init__(file_name.rsplit(".", 1)[0])
         self.file_name = file_name
 
-    def run(self):
+    def run_and_update_version_file(self, version_file):
         """
         Run this migration
         """
         try:
-            print(f"Running migration for {self.version}")
+            print(f"Running migration for {self}")
             subprocess.Popen([f"./{self.file_name}"]).wait()
         except subprocess.CalledProcessError as error:
             print(f"{error}", file=sys.stderr)
             sys.exit(1)
+        # If we successfully ran the migration, we are now in a new state that we want to see
+        # reflected in case a subsequent migration fails
+        update_version(self, version_file)
 
 
-def update_version(target):
-    with open(VERSION_FILE, "w+", encoding="utf-8") as ver:
-        ver.write(f"{target}")
+def update_version(target, version_file):
+    with open(version_file, "w+", encoding="utf-8") as ver:
+        ver.write(f"{target}\n")
 
 
 if __name__ == "__main__":
@@ -103,7 +109,7 @@ if __name__ == "__main__":
     # ACTION: 1: install, 2: upgrade
     elif ACTION == 1:
         # See https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#_syntax
-        update_version(VERSION_TARGET)
+        update_version(VERSION_TARGET, VERSION_FILE)
         sys.exit(0)
     else:
         print(f"Aborting: cannot upgrade without version file: '{VERSION_FILE}'", file=sys.stderr)
@@ -114,7 +120,4 @@ if __name__ == "__main__":
 
     for migration in migrations:
         if VERSION_BASE < migration <= VERSION_TARGET:
-            migration.run()
-
-    # Successfully ran all migrations!
-    update_version(VERSION_TARGET)
+            migration.run_and_update_version_file(VERSION_FILE)

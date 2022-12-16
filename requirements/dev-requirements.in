@@ -1,5 +1,6 @@
 bandit
 black
+diffoscope
 flake8
 isort
 pip-tools

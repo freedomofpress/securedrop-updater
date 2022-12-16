@@ -8,13 +8,13 @@ jobs:
       - run: dnf install -y git make
       - checkout
       - run:
-          name: Install dependencies and run linters
+          name: Install dependencies
           command: |
             make install-deps
-            make venv
-            source .venv/bin/activate
             pip install --require-hashes -r requirements/dev-requirements.txt
-            make lint
+      - run:
+          name: Run linters
+          command: make lint
   build-rpm:
     docker:
       - image: fedora:32
@@ -22,13 +22,13 @@ jobs:
       - run: dnf install -y git make
       - checkout
       - run:
-          name: Build RPMs twice, ensure reproducibility
+          name: Install dependencies
           command: |
             make install-deps
-            PREFIX="/tmp/build_pass_"
-            make build-rpm | tee "${PREFIX}1"
-            make build-rpm | tee "${PREFIX}2"
-            [ "$(tail -n 1 ${PREFIX}1)" == "$(tail -n 1 ${PREFIX}2)" ]
+            pip3 install --require-hashes -r requirements/dev-requirements.txt
+      - run:
+          name: Check reproducibility
+          command: make check-reproducibility
   test:
     docker:
       - image: fedora:32
@@ -39,10 +39,10 @@ jobs:
           name: Install dependencies and run tests
           command: |
             make install-deps
-            make venv
-            source .venv/bin/activate
-            pip install --require-hashes -r requirements/dev-requirements.txt
-            make test
+            pip3 install --require-hashes -r requirements/dev-requirements.txt
+      - run:
+          name: Run tests
+          command: make test
   test-migration:
     docker:
       - image: fedora:32
@@ -50,12 +50,11 @@ jobs:
       - run: dnf install -y git make
       - checkout
       - run:
-          name: Install dependencies and run migration tests
-          command: |
-            make install-deps
-            curl https://raw.githubusercontent.com/QubesOS/qubes-qubes-release/master/qubes-dom0.repo.in | sed -e 's/$releasever/4.1/g' -e 's/%DIST%/fc32/g' > /etc/yum.repos.d/qubes-dom0.repo
-            curl -o /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.1-primary https://raw.githubusercontent.com/QubesOS/qubes-qubes-release/master/RPM-GPG-KEY-qubes-4-primary
-            make test-migration
+          name: Install dependencies
+          command: make install-deps
+      - run:
+          name: Run migration tests
+          command: make test-migration
 
 workflows:
   version: 2

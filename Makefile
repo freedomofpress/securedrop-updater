@@ -9,9 +9,12 @@ CONTAINER := $(if $(shell grep "Thirty Two" /etc/fedora-release),,./scripts/cont
 build-rpm:
 	$(CONTAINER) ./scripts/build-rpm.sh
 
+.PHONY: check-reproducibility
+check-reproducibility: ## Check RPM package reproducibility
+	$(CONTAINER) ./scripts/check-reproducibility.sh
+
 # Installs Fedora 32 package dependencies, to build RPMs and run tests,
-# primarily useful in CI
-# If you update these dependencies, make sure to update the Dockerfile as well.
+# primarily useful in CI/containers
 .PHONY: install-deps
 install-deps:
 	sudo dnf install -y \

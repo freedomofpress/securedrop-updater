@@ -25,7 +25,7 @@ function oci_image() {
            --build-arg=USER_ID="$(id -u)" \
            --build-arg=USER_NAME="${USER:-root}" \
            -t "${NAME}" \
-           --file "${TOPLEVEL}/Dockerfile" \
+           --file "${TOPLEVEL}/bootstrap/Dockerfile" \
            "${TOPLEVEL}"
 }
 

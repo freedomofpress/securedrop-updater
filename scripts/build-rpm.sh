@@ -25,4 +25,4 @@ rpmbuild \
     -bb --clean "rpm-build/SPECS/${PROJECT}.spec"
 
 printf '\nBuild complete! RPMs and their checksums are:\n\n'
-find rpm-build/ -type f -iname '*.rpm' -print0 | sort -zV | xargs -0 sha256sum
+find rpm-build/ -type f -iname "${PROJECT}-$(cat "${TOPLEVEL}/VERSION")*.rpm" -print0 | sort -zV | xargs -0 sha256sum

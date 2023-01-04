@@ -26,10 +26,12 @@ BuildArch:		noarch
 BuildRequires:	python3-devel
 BuildRequires:	python3-pip
 
-# SecureDrop Updater triggers Salt to update templates
+# SecureDrop Updater triggers Salt to update templates, has a Qt5 based UI and
+# logs to journald (python3-systemd is installed on Qubes OS by default through
+# other dependencies, but not in CI)
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:		python3-qt5
-
+Requires:		python3-systemd
 
 %description
 SecureDrop Updater enforces the update policy for SecureDrop Workstation.
@@ -89,7 +91,7 @@ find %{buildroot} -exec touch -m -d @%{getenv:SOURCE_DATE_EPOCH} {} +
 # If we're upgrading this package, run migrations and/or update the version
 # file.
 # Migrations will not be triggered during a reinstall
-%{python3} %{_libexecdir}/%{name}/migrations.py %{name} ${1} %{version}
+%{python3} %{_libexecdir}/%{name}/migrations.py %{name} ${1} %{version} || :
 
 
 %preun

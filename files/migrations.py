@@ -5,13 +5,20 @@ Runs migration scripts for this project
 Intended to be triggered by the %post rpm scriptlet rather than manually.
 """
 
+import logging
 import os
 import subprocess
 import sys
 from glob import glob
 
+from systemd.journal import JournalHandler
+
 VERSION_FILE = "/var/lib/{}/version"
 MIGRATIONS_DIR = "/usr/libexec/{}/migrations/"
+
+log = logging.getLogger("securedrop-updater-migrations")
+log.addHandler(JournalHandler(SYSLOG_IDENTIFIER="securedrop-updater-migrations"))
+log.setLevel(logging.INFO)
 
 
 class Version:
@@ -80,12 +87,22 @@ class Migration(Version):
         """
         Run this migration
         """
+        rc = None
         try:
-            print(f"Running migration for {self}")
-            subprocess.Popen([f"./{self.file_name}"]).wait()
+            log.info(f"Running migration for {migration}")
+            process = subprocess.Popen([f"{MIGRATIONS_DIR}{self.file_name}"])
+            stdout, stderr = process.communicate()
+            if stdout:
+                log.info(stdout)
+            if stderr:
+                log.error(stderr)
+            rc = process.returncode
         except subprocess.CalledProcessError as error:
-            print(f"{error}", file=sys.stderr)
-            sys.exit(1)
+            log.error(f"{error}", file=sys.stderr)
+
+        if rc != 0:
+            sys.exit(2)
+
         # If we successfully ran the migration, we are now in a new state that we want to see
         # reflected in case a subsequent migration fails
         update_version(self, version_file)
@@ -112,11 +129,13 @@ if __name__ == "__main__":
         update_version(VERSION_TARGET, VERSION_FILE)
         sys.exit(0)
     else:
-        print(f"Aborting: cannot upgrade without version file: '{VERSION_FILE}'", file=sys.stderr)
-        sys.exit(1)
+        log.error(f"Aborting: cannot upgrade without version file: '{VERSION_FILE}'")
+        sys.exit(2)
 
     os.chdir(MIGRATIONS_DIR)
-    migrations = sorted([Migration(file_name) for file_name in glob("*")])
+    # The following glob implies that no Python file names in this folder may end in a number except
+    # migrations named after the version of the state that they establish.
+    migrations = sorted([Migration(path) for path in glob("*[0-9].py")])
 
     for migration in migrations:
         if VERSION_BASE < migration <= VERSION_TARGET:

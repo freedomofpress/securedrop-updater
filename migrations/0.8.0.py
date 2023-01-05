@@ -7,27 +7,27 @@ import grp
 import os
 import pwd
 import shutil
+from pathlib import Path
 
 from steps import MigrationStep, Move, Remove, Symlink, migrate
 
 
 class DesktopFile(MigrationStep):
-    def __init__(self, full_path, gui_user_path, uid, gid):
-        self.full_path = full_path
-        self.gui_user_path = gui_user_path
-        self.desktop_file_name = os.path.basename(full_path)
-        self.full_path_desktop = f"{self.gui_user_path}/Desktop/{self.desktop_file_name}"
+    def __init__(self, path, gui_user_path, uid, gid):
+        self.path = Path(path)
+        self.gui_user_path = Path(gui_user_path)
+        self.target = self.gui_user_path / "Desktop" / self.path.name
         self.uid = uid
         self.gid = gid
 
     def run(self):
-        shutil.copy2(self.full_path, self.full_path_desktop)
-        os.chown(self.full_path_desktop, self.uid, self.gid, follow_symlinks=False)
-        os.chmod(self.full_path_desktop, 0o755, follow_symlinks=False)  # nosec
+        shutil.copy2(str(self.path), str(self.target))
+        os.chown(str(self.target), self.uid, self.gid, follow_symlinks=False)
+        self.target.chmod(0o755)
 
     def revert(self, _tmpdir):
-        if os.path.exists(self.full_path_desktop):
-            os.remove(self.full_path_desktop)
+        if self.target.exists():
+            self.target.unlink()
 
 
 if __name__ == "__main__":

@@ -3,14 +3,14 @@ Utility library for warning the user that security updates have not been applied
 in some time.
 """
 import os
-
 from datetime import datetime
+
 from sdw_util import Util
 
 sdlog = Util.get_logger(module=__name__)
 
 # The directory where status files and logs are stored
-BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
+BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_updater")
 
 # The file and format that contains the timestamp of the last successful update
 LAST_UPDATED_FILE = os.path.join(BASE_DIRECTORY, "sdw-last-updated")

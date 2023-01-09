@@ -7,7 +7,7 @@ ENV USER_NAME ${USER_NAME:-root}
 ARG USER_ID
 ENV USER_ID ${USER_ID:-0}
 
-RUN dnf install -y git make
+RUN dnf install -y make
 
 COPY Makefile Makefile
 

@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: fedora:32
     steps:
-      - run: dnf install -y git make
+      - run: dnf install -y make
       - checkout
       - run:
           name: Install dependencies
@@ -19,7 +19,7 @@ jobs:
     docker:
       - image: fedora:32
     steps:
-      - run: dnf install -y git make
+      - run: dnf install -y make
       - checkout
       - run:
           name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
     docker:
       - image: fedora:32
     steps:
-      - run: dnf install -y git make
+      - run: dnf install -y make
       - checkout
       - run:
           name: Install dependencies and run tests
@@ -47,7 +47,7 @@ jobs:
     docker:
       - image: fedora:32
     steps:
-      - run: dnf install -y git make
+      - run: dnf install -y make
       - checkout
       - run:
           name: Install dependencies

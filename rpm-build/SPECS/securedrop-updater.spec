@@ -25,6 +25,8 @@ Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 BuildArch:		noarch
 BuildRequires:	python3-devel
 BuildRequires:	python3-pip
+BuildRequires:	python3-setuptools
+BuildRequires:	python3-wheel
 
 # SecureDrop Updater triggers Salt to update templates, has a Qt5 based UI and
 # logs to journald (python3-systemd is installed on Qubes OS by default through
@@ -46,7 +48,7 @@ SecureDrop Updater enforces the update policy for SecureDrop Workstation.
 
 
 %install
-%{python3} -m pip install --no-compile --root %{buildroot} .
+%{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/%{_datadir}/applications/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
@@ -64,6 +66,7 @@ install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 install -m 755 files/migrations.py %{buildroot}/%{_libexecdir}/%{name}/
 install -m 755 migrations/* %{buildroot}/%{_libexecdir}/%{name}/migrations/
+chmod 644 %{buildroot}/%{_libexecdir}/%{name}/migrations/steps.py
 install -m 644 README.md %{buildroot}/%{_custom_docdir}/
 install -m 644 LICENSE %{buildroot}/%{_custom_licensedir}/
 find %{buildroot} -type d \( -iname '*.egg-info' -o -iname '*.dist-info' \) -print0 | xargs -0 -r rm -rf

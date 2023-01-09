@@ -18,8 +18,8 @@ check-reproducibility: ## Check RPM package reproducibility
 .PHONY: install-deps
 install-deps:
 	sudo dnf install -y \
-        file python3-devel python3-pip python3-qt5 xorg-x11-server-Xvfb \
-		rpmdevtools rpmlint ShellCheck
+        git file python3-devel python3-pip python3-qt5 python3-wheel \
+		xorg-x11-server-Xvfb rpmdevtools rpmlint ShellCheck
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.

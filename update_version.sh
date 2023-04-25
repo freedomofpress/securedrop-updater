@@ -5,7 +5,7 @@ set -e
 
 readonly NEW_VERSION=$1
 
-source "$(dirname "$0")/common.sh"
+source "scripts/common.sh"
 
 if [ -z "$NEW_VERSION" ]; then
   echo "You must specify the new version!"

@@ -1,5 +1,5 @@
 Name:		securedrop-updater
-Version:	0.7.0
+Version:	0.8.0
 Release:	1%{?dist}
 Summary:	SecureDrop Updater
 
@@ -68,8 +68,7 @@ install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 install -m 755 files/migrations.py %{buildroot}/%{_libexecdir}/%{name}/
 install -m 644 files/migration_steps.py %{buildroot}/%{_libexecdir}/%{name}/
-# Uncomment and replace $ with % when migrations are added:
-# install -m 644 migrations/*.py ${buildroot}/${_libexecdir}/${name}/migrations/
+install -m 644 migrations/*.py %{buildroot}/%{_libexecdir}/%{name}/migrations/
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 
@@ -82,8 +81,7 @@ install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 %attr(755, root, root) %{_libexecdir}/%{name}/migrations.py
 %{_libexecdir}/%{name}/migration_steps.py
 %dir %{_libexecdir}/%{name}/migrations/
-# Uncomment and replace $ with % when migrations are added:
-# ${_libexecdir}/${name}/migrations/*.py
+%{_libexecdir}/%{name}/migrations/*.py
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
@@ -111,6 +109,6 @@ install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 
 
 %changelog
-* Mon Feb 27 2023 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
+* Mon Feb 27 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.0-1
 - First release of securedrop-updater (split off of
-  securedrop-workstation-dom0-config)
+  securedrop-workstation-dom0-config) with new versioned migration support
